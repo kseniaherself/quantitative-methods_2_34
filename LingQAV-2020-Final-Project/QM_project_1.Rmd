@@ -1,0 +1,56 @@
+---
+title: "Two samples - two days"
+output: pdf_document
+---
+
+#The word order in voice messages and text messages differs in the order of an object relative to a verb: in text messages the object is before the verb, in voice messages the verb is before the object. 
+#In languages with (relatively) free words order clauses with different words orders are observed. Nevertheless, even in such languages there is the basic or neutral words order. Words orders in these languages could be motivated by different information structure: for instance, a special position for the topic in the clause. However, informative structure is not the only reason for this. Formal vs informal communication or spoken vs written language may reveal distinctive structures. Moreover, we may expect variations in the word order of oral spoken colloquial language and written colloquial speech as its written representation. The aim of our research is to investigate it.
+
+#Data: voice messages and text messages annotated for the position of an object relative to a verb, texts similar in their topic and in size for each speaker (the thematic task for each respondent is the same). 
+#H0: the basic word order (VO) does not depend on communicative strategy (in voice messages and text messages is the same).
+#H1: the basic word order (VO) depends on communicative strategy (the word order in voice messages (VO) and in text messages (OV)).
+#We asked students of the age of 15-18 years (students of HSE Lyceum of 10th and 11th grade) both to record a voice message and to write a text message on a messenger (Telegram) in a private chat. Consultants were divided into two groups: first group supposed to record a voice message and then to write a text message; the second group had to write a text message first and then to record a voice message. The topic was fixed: participants asked what they did yesterday. We also collected the following sociolinguistic information:
+#gender
+#age
+#grade (10th/11th)
+#written/spoken languages
+#amount of messages
+#the order of tasks
+#city/town
+
+#The sample is not representative enough: the consultants seem to have no distinctive features. So, we decided to use the responses of 16 and 17 age consultants only. 
+
+```{r setup, include=FALSE}
+data <- read.csv('/Users/Xenia/Downloads/result4.csv')
+data$First.message.type <- data$First.message.type == data$Message.type
+data$Target <- ifelse(data$VO.OV=="VO", 1, 0)
+
+data <- data[data$VO.OV != '0' & data$Age != 18, ]
+data$Age <- as.factor(data$Age)
+```
+
+#After the data processing we discovered that the probability of basic word order potentially depends on age but not other factors that describe the consultants.
+
+```{r}
+counts <- table(data$Target, data$Age)
+barplot(counts, main="Distribution VO&OV (1/0) depending on age",
+  xlab="Age", col=c("darkblue","red"),
+  legend = rownames(counts), beside=TRUE)
+```
+
+#According to this fact, we built the basic model:
+
+```{r}
+model = glm('Target ~ Age', data=data[, c('Target', 'Age')], family = 'binomial')
+summary(model)
+```
+
+#Hence, the probability of basic word order does not significantly depend on age. However, one can see the potential tendency for more sofisticated samples.
+
+
+```{r}
+model_message = glm('Target ~ Message.type * Age', data=data[, c('Target', 'Message.type', 'Age')], family = 'binomial')
+summary(model_message)
+```
+
+#When adding the factor of communicative strategy type, the z-scores of random slope estimates and factor estimates itself are above significance levels. So, we can consider that communicative strategy does not influnce the word order of consultants and we have no reasons to reject H0.
